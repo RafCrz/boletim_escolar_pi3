@@ -1,0 +1,23 @@
+<!-- core/templates/core/cadastrar_disciplina.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Cadastros - Secretaria</title>
+</head>
+<body>
+    <h1>Bem-vindo ao Sistema de Boletim Escolar</h1>
+
+    <h1>Cadastrar Disciplina</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Salvar</button>
+    </form>
+
+<a href="{% url 'secretaria' %}">Voltar</a>
+
+</body>
+</html>

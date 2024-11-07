@@ -1,0 +1,21 @@
+<!-- core/templates/core/index.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boletim Escolar</title>
+</head>
+<body>
+    <h1>Bem-vindo ao Sistema de Boletim Escolar</h1>
+
+    <nav>
+        <ul>
+            <li><a href="{% url 'professor' %}">Professor</a></li>
+            <li><a href="{% url 'aluno' %}">Aluno</a></li>
+            <li><a href="{% url 'secretaria' %}">Secretaria</a></li>
+            <li><a href="/admin/">Admin</a></li>
+        </ul>
+    </nav>
+</body>
+</html>
