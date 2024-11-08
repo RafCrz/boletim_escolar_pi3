@@ -69,7 +69,12 @@
                         <tr>
                             <td>{{ forloop.counter }}</td>
                             <td>{{ professor.nome }}</td>
-                            <td>{{ professor.disciplina }}</td>
+                            <td>
+                                <!-- Exibir as disciplinas do professor -->
+                                {% for disciplina in professor.disciplinas.all %}
+                                    {{ disciplina.nome }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
                         </tr>
                     {% empty %}
                         <tr>

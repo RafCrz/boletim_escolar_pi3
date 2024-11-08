@@ -5,9 +5,9 @@ from django.db import models
 # ------------------------------------------------------------
 class Aluno(models.Model):
     nome = models.CharField(max_length=100)
-    rm = models.CharField(max_length=20, unique=True)
-    ra_rg = models.CharField(max_length=20, blank=True, null=True)
-    data_nascimento = models.DateField()
+    rm = models.CharField(max_length=20, unique=True)  # Registro de matrícula único
+    ra_rg = models.CharField(max_length=20, blank=True, null=True)  # RA ou RG (opcional)
+    data_nascimento = models.DateField()  # Data de nascimento do aluno
     
     # Status do aluno (Ativo, Transferido ou Suplente)
     status = models.CharField(
@@ -24,9 +24,6 @@ class Aluno(models.Model):
         return self.nome
 
 
-
-
-
 # ------------------------------------------------------------
 # Modelo Disciplina
 # ------------------------------------------------------------
@@ -41,12 +38,12 @@ class Disciplina(models.Model):
 # Modelo Professor
 # ------------------------------------------------------------
 class Professor(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=255)  # Nome completo do professor
     
-    # Novos campos
-    email = models.EmailField(max_length=100, blank=True, null=True)  # Email opcional
-    telefone = models.CharField(max_length=15, blank=True, null=True)  # Telefone opcional
-    
+    # Informações de contato (opcionais)
+    email = models.EmailField(max_length=100, blank=True, null=True)
+    telefone = models.CharField(max_length=15, blank=True, null=True)
+
     # Relacionamento muitos-para-muitos com Disciplina
     disciplinas = models.ManyToManyField(Disciplina, related_name='professores')
 
@@ -58,10 +55,10 @@ class Professor(models.Model):
 # Modelo Turma
 # ------------------------------------------------------------
 class Turma(models.Model):
-    ano = models.PositiveIntegerField()  # Exemplo: 2024
-    classe = models.CharField(max_length=5, default='Indefinido')  # Valor padrão para classe (Ex: 1A, 2B, etc.)
+    ano = models.PositiveIntegerField()  # Ano da turma (Exemplo: 2024)
+    classe = models.CharField(max_length=5, default='Indefinido')  # Classe (Exemplo: 1A, 2B, etc.)
     
-    # Relacionamento muitos-para-muitos com alunos e professores
+    # Relacionamento muitos-para-muitos com Aluno e Professor
     alunos = models.ManyToManyField(Aluno, related_name='turmas')
     professores = models.ManyToManyField(Professor, related_name='turmas')
 
@@ -72,11 +69,12 @@ class Turma(models.Model):
         verbose_name = "Turma"
         verbose_name_plural = "Turmas"
 
+
 # ------------------------------------------------------------
 # Modelo Nota
 # ------------------------------------------------------------
 class Nota(models.Model):
-    # Relacionamento com aluno e disciplina
+    # Relacionamento com Aluno e Disciplina
     aluno = models.ForeignKey('Aluno', on_delete=models.CASCADE)
     disciplina = models.ForeignKey('Disciplina', on_delete=models.CASCADE)
 

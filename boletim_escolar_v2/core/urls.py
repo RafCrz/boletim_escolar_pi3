@@ -48,12 +48,12 @@ urlpatterns = [
     path('secretaria/excluir_professor/<int:professor_id>/', views.excluir_professor, name='excluir_professor'),
     path('secretaria/consultar_professor/<int:professor_id>/', views.consultar_professor, name='consultar_professor'),
 
-    # disciplinas
-    path('disciplinas/', views.gerenciar_disciplinas, name='gerenciar_disciplinas'),
+    # ------------------------------------------------------------
+    # Gestão de Disciplinas
+    # ------------------------------------------------------------
+    path('disciplinas/', views.gerenciar_disciplinas, name='gerenciar_disciplinas'),  # Gerenciar disciplinas
     path('disciplinas/editar/<int:disciplina_id>/', views.editar_disciplina, name='editar_disciplina'),
     path('disciplinas/excluir/<int:disciplina_id>/', views.excluir_disciplina, name='excluir_disciplina'),
     path('disciplinas/consultar/<int:disciplina_id>/', views.consultar_disciplina, name='consultar_disciplina'),
     path('disciplinas/cadastrar/', views.cadastrar_disciplina, name='cadastrar_disciplina'),
-    path('disciplinas/', views.gerenciar_disciplinas, name='gerenciar_disciplinas'),
-
 ]

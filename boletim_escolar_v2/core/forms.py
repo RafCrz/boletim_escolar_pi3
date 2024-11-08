@@ -25,6 +25,7 @@ class AlunoForm(forms.ModelForm):
         model = Aluno
         fields = '__all__'  # Inclui todos os campos do modelo Aluno
 
+
 # ------------------------------------------------------------
 # Formulário Turma
 # ------------------------------------------------------------
@@ -47,10 +48,12 @@ class TurmaForm(forms.ModelForm):
         model = Turma
         fields = ['ano', 'classe', 'alunos', 'professores']  # Campos para criação/edição da turma
 
+
 # ------------------------------------------------------------
 # Formulário Professor
 # ------------------------------------------------------------
 class ProfessorForm(forms.ModelForm):
+    # Campo para selecionar múltiplas disciplinas (opcional)
     disciplinas = forms.ModelMultipleChoiceField(
         queryset=Disciplina.objects.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -61,10 +64,11 @@ class ProfessorForm(forms.ModelForm):
         model = Professor
         fields = ['nome', 'email', 'telefone', 'disciplinas']  # Inclui os novos campos e disciplinas
 
+
 # ------------------------------------------------------------
 # Formulário Disciplina
 # ------------------------------------------------------------
 class DisciplinaForm(forms.ModelForm):
     class Meta:
         model = Disciplina
-        fields = ['nome']
+        fields = ['nome']  # Apenas o nome da disciplina

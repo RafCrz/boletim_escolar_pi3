@@ -101,7 +101,12 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ professor.nome }}</td>
-                                <td>{{ professor.disciplina }}</td>
+                                <td>
+                                    <!-- Exibir as disciplinas do professor -->
+                                    {% for disciplina in professor.disciplinas.all %}
+                                        {{ disciplina.nome }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
                                 <td>
                                     <input class="form-check-input" type="checkbox" name="professores" value="{{ professor.id }}" id="professor_{{ professor.id }}" {% if professor in turma.professores.all %}checked{% endif %}>
                                 </td>

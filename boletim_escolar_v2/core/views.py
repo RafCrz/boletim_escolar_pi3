@@ -1,3 +1,6 @@
+# ------------------------------------------------------------
+# Importações
+# ------------------------------------------------------------
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Aluno, Turma, Professor, Disciplina
 from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm
@@ -6,6 +9,7 @@ from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm
 # ------------------------------------------------------------
 # Páginas Gerais (Index, Professor, Aluno, Secretaria)
 # ------------------------------------------------------------
+
 def index(request):
     return render(request, 'core/index.html')
 
@@ -23,23 +27,26 @@ def secretaria(request):
 # Gestão de Turmas
 # ------------------------------------------------------------
 
+# Gerenciar turmas (listar turmas)
 def gerenciar_turmas(request):
     turmas = Turma.objects.all()
     return render(request, 'core/gerenciar_turmas.html', {'turmas': turmas})
 
+# Consultar uma turma específica
 def consultar_turma(request, turma_id):
     turma = Turma.objects.get(id=turma_id)
     return render(request, 'core/consultar_turma.html', {'turma': turma})
 
+# Excluir uma turma
 def excluir_turma(request, pk):
     turma = Turma.objects.get(pk=pk)
     turma.delete()
     return redirect('gerenciar_turmas')
 
-
+# Criar nova turma
 def criar_turma(request):
-    alunos = Aluno.objects.all().order_by('nome')  # Busca normal, sem select_related
-    professores = Professor.objects.all().order_by('nome')
+    alunos = Aluno.objects.all().order_by('nome')  # Busca todos os alunos
+    professores = Professor.objects.all().order_by('nome')  # Busca todos os professores
 
     if request.method == 'POST':
         form = TurmaForm(request.POST)
@@ -53,8 +60,7 @@ def criar_turma(request):
 
     return render(request, 'core/criar_turma.html', {'form': form, 'alunos': alunos, 'professores': professores})
 
-
-
+# Editar turma existente
 def editar_turma(request, pk):
     turma = get_object_or_404(Turma, pk=pk)
     alunos = Aluno.objects.all()
@@ -80,6 +86,7 @@ def editar_turma(request, pk):
 # Gestão de Alunos
 # ------------------------------------------------------------
 
+# Gerenciar alunos (listar alunos)
 def gerenciar_alunos(request):
     query = request.GET.get('q', '')
     alunos = Aluno.objects.all()
@@ -90,6 +97,7 @@ def gerenciar_alunos(request):
     alunos = alunos.order_by('nome')
     return render(request, 'core/gerenciar_alunos.html', {'alunos': alunos, 'query': query})
 
+# Editar aluno específico
 def editar_aluno(request, aluno_id):
     aluno = Aluno.objects.get(id=aluno_id)
     if request.method == 'POST':
@@ -102,15 +110,18 @@ def editar_aluno(request, aluno_id):
 
     return render(request, 'core/editar_aluno.html', {'form': form, 'aluno': aluno})
 
+# Excluir aluno
 def excluir_aluno(request, aluno_id):
     aluno = Aluno.objects.get(id=aluno_id)
     aluno.delete()
     return redirect('gerenciar_alunos')
 
+# Consultar dados de um aluno
 def consultar_aluno(request, aluno_id):
     aluno = Aluno.objects.get(id=aluno_id)
     return render(request, 'core/consultar_aluno.html', {'aluno': aluno})
 
+# Cadastrar aluno
 def cadastrar_aluno(request):
     if request.method == 'POST':
         form = AlunoForm(request.POST)
@@ -123,14 +134,10 @@ def cadastrar_aluno(request):
 
 
 # ------------------------------------------------------------
-# Gestão de Professores e Disciplinas
-# ------------------------------------------------------------
-
-# ------------------------------------------------------------
 # Gestão de Professores
 # ------------------------------------------------------------
 
-# Lista todos os professores
+# Gerenciar professores (listar professores)
 def gerenciar_professores(request):
     query = request.GET.get('q', '')  # Busca por nome
     professores = Professor.objects.all()
@@ -141,8 +148,7 @@ def gerenciar_professores(request):
     professores = professores.order_by('nome')  # Ordena por nome
     return render(request, 'core/gerenciar_professores.html', {'professores': professores, 'query': query})
 
-
-# Editar um professor específico
+# Editar dados de um professor
 def editar_professor(request, professor_id):
     professor = Professor.objects.get(id=professor_id)
     if request.method == 'POST':
@@ -159,20 +165,18 @@ def editar_professor(request, professor_id):
     
     return render(request, 'core/editar_professor.html', {'form': form, 'professor': professor})
 
-
-# Excluir um professor específico
+# Excluir um professor
 def excluir_professor(request, professor_id):
     professor = Professor.objects.get(id=professor_id)
     professor.delete()
     return redirect('gerenciar_professores')
 
-
-# Consultar os detalhes de um professor
+# Consultar dados de um professor
 def consultar_professor(request, professor_id):
     professor = Professor.objects.get(id=professor_id)
     return render(request, 'core/consultar_professor.html', {'professor': professor})
 
-
+# Cadastrar professor
 def cadastrar_professor(request):
     if request.method == 'POST':
         form = ProfessorForm(request.POST)
@@ -183,14 +187,22 @@ def cadastrar_professor(request):
                 professor.disciplinas.set(disciplinas)
             return redirect('gerenciar_professores')
         else:
-            # Adicionar uma mensagem de erro se o formulário não for válido
-            print(form.errors)  # Para depurar e ver o motivo
+            print(form.errors)  # Imprime os erros para depuração
     else:
         form = ProfessorForm()
     return render(request, 'core/cadastrar_professor.html', {'form': form})
 
 
+# ------------------------------------------------------------
+# Gestão de Disciplinas
+# ------------------------------------------------------------
 
+# Gerenciar disciplinas (listar disciplinas)
+def gerenciar_disciplinas(request):
+    disciplinas = Disciplina.objects.all()
+    return render(request, 'core/gerenciar_disciplinas.html', {'disciplinas': disciplinas})
+
+# Editar dados de uma disciplina
 def editar_disciplina(request, disciplina_id):
     disciplina = get_object_or_404(Disciplina, pk=disciplina_id)
     if request.method == 'POST':
@@ -202,23 +214,18 @@ def editar_disciplina(request, disciplina_id):
         form = DisciplinaForm(instance=disciplina)
     return render(request, 'core/editar_disciplina.html', {'form': form, 'disciplina': disciplina})
 
-
+# Consultar dados de uma disciplina
 def consultar_disciplina(request, disciplina_id):
     disciplina = get_object_or_404(Disciplina, pk=disciplina_id)
     return render(request, 'core/consultar_disciplina.html', {'disciplina': disciplina})
 
-
+# Excluir disciplina
 def excluir_disciplina(request, disciplina_id):
     disciplina = get_object_or_404(Disciplina, pk=disciplina_id)
     disciplina.delete()
     return redirect('gerenciar_disciplinas')
 
-
-def gerenciar_disciplinas(request):
-    disciplinas = Disciplina.objects.all()
-    return render(request, 'core/gerenciar_disciplinas.html', {'disciplinas': disciplinas})
-
-
+# Cadastrar disciplina
 def cadastrar_disciplina(request):
     if request.method == 'POST':
         form = DisciplinaForm(request.POST)
