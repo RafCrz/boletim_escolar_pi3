@@ -1,0 +1,87 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Turma</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Consultar Turma: {{ turma.ano }} - {{ turma.classe }}</h1>
+
+        <!-- Botões de Navegação -->
+        <div class="d-flex justify-content-between mb-4">
+            <a href="{% url 'gerenciar_turmas' %}" class="btn btn-secondary">Voltar</a>
+        </div>
+
+        <!-- Exibe informações da turma -->
+        <div class="mb-4">
+            <h3>Detalhes da Turma</h3>
+            <p><strong>Ano:</strong> {{ turma.ano }}</p>
+            <p><strong>Classe:</strong> {{ turma.classe }}</p>
+        </div>
+
+        <!-- Tabela de Alunos -->
+        <div class="mb-3">
+            <h4>Alunos</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nome</th>
+                        <th>Matrícula</th>
+                        <th>Data de Nascimento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aluno in turma.alunos.all %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ aluno.nome }}</td>
+                            <td>{{ aluno.rm }}</td>
+                            <td>{{ aluno.data_nascimento|date:"d/m/Y" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">Nenhum aluno cadastrado na turma</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabela de Professores -->
+        <div class="mb-3">
+            <h4>Professores</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Nome</th>
+                        <th>Disciplina</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for professor in turma.professores.all %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ professor.nome }}</td>
+                            <td>{{ professor.disciplina }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">Nenhum professor cadastrado nesta turma</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
