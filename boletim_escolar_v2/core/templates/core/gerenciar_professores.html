@@ -11,8 +11,6 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Gerenciamento de Professores - Secretaria</h1>
-
         <h1 class="text-center mb-4">Gerenciamento de Professores</h1>
 
         <div class="d-flex justify-content-between mb-3">
@@ -27,6 +25,7 @@
             <thead class="table-primary">
                 <tr>
                     <th>Nome</th>
+                    <th>Username</th>  <!-- Nova coluna para o username -->
                     <th>Disciplina</th>
                     <th>Ações</th>
                 </tr>
@@ -35,12 +34,14 @@
                 {% for professor in professores %}
                 <tr class="professor-row">
                     <td>{{ professor.nome }}</td>
-                    <td>    {% for disciplina in professor.disciplinas.all %}
-                        {{ disciplina.nome }}{% if not forloop.last %}, {% endif %}
-                    {% empty %}
-                        Nenhuma disciplina
-                    {% endfor %}
-                </td>
+                    <td>{{ professor.user.username }}</td>  <!-- Exibe o username do professor -->
+                    <td>
+                        {% for disciplina in professor.disciplinas.all %}
+                            {{ disciplina.nome }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Nenhuma disciplina
+                        {% endfor %}
+                    </td>
                     <td>
                         <a href="{% url 'editar_professor' professor.id %}" class="btn btn-warning btn-sm">Editar</a>
                         <a href="{% url 'consultar_professor' professor.id %}" class="btn btn-info btn-sm">Consultar</a>

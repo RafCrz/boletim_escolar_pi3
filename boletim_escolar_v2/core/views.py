@@ -4,6 +4,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Aluno, Turma, Professor, Disciplina
 from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
+from random import randint
+from django.contrib.auth import login, authenticate
+from django.contrib import messages
+
+
+
 
 
 # ------------------------------------------------------------
@@ -59,6 +73,7 @@ def criar_turma(request):
         form = TurmaForm()
 
     return render(request, 'core/criar_turma.html', {'form': form, 'alunos': alunos, 'professores': professores})
+
 
 # Editar turma existente
 def editar_turma(request, pk):
@@ -137,6 +152,52 @@ def cadastrar_aluno(request):
 # Gestão de Professores
 # ------------------------------------------------------------
 
+
+class ProfessorLoginView(LoginView):
+    template_name = 'core/login_professor.html'
+    authentication_form = AuthenticationForm
+
+    def form_valid(self, form):
+        user = form.get_user()
+        # Verifica se o usuário tem o perfil de professor
+        if hasattr(user, 'professor_profile'):
+            login(self.request, user)
+            return redirect('professor_home')
+        else:
+            messages.error(self.request, "Você não tem permissão para acessar esta página como professor.")
+            return redirect('login_professor')
+
+# Página inicial do professor após login
+class ProfessorHomeView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'core/professor_home.html'
+
+    def test_func(self):
+        return hasattr(self.request.user, 'professor_profile')
+
+    def handle_no_permission(self):
+        messages.error(self.request, "Acesso restrito a professores.")
+        return redirect('login_professor')
+    
+    
+    def get_context_data(self, **kwargs):
+        # Obtemos o professor com base no usuário logado
+        professor = self.request.user.professor_profile
+        
+        # Supondo que o modelo Professor tenha um ManyToMany com Turma
+        turmas = professor.turmas.all()  # 'turmas' é o nome do campo que se relaciona com Turma
+
+        # Passamos as turmas para o template
+        context = super().get_context_data(**kwargs)
+        context['turmas'] = turmas
+        return context
+
+
+# Função de logout do professor
+def professor_logout(request):
+    logout(request)
+    return redirect('login_professor')
+
+
 # Gerenciar professores (listar professores)
 def gerenciar_professores(request):
     query = request.GET.get('q', '')  # Busca por nome
@@ -176,21 +237,56 @@ def consultar_professor(request, professor_id):
     professor = Professor.objects.get(id=professor_id)
     return render(request, 'core/consultar_professor.html', {'professor': professor})
 
+
 # Cadastrar professor
 def cadastrar_professor(request):
     if request.method == 'POST':
         form = ProfessorForm(request.POST)
+        user_form = UserCreationForm(request.POST)
+
         if form.is_valid():
-            professor = form.save()  # Salva o professor
-            disciplinas = form.cleaned_data.get('disciplinas')
-            if disciplinas:
-                professor.disciplinas.set(disciplinas)
-            return redirect('gerenciar_professores')
+            # Preencher o username automaticamente com base no nome do professor
+            nome = form.cleaned_data['nome']
+            username = nome.split()[0].lower() + nome.split()[-1].lower()  # Exemplo: 'João Silva' -> 'joaosilva'
+
+            # Verificar se o username já existe
+            while User.objects.filter(username=username).exists():
+                username = username + str(randint(1, 999))  # Adiciona um número aleatório ao username
+
+            # Atribuir o username ao formulário de criação de usuário
+            user_form.fields['username'].initial = username
+
+            # Definir uma senha padrão (exemplo: 'senha@123')
+            user_form.fields['password1'].initial = 'senha@123'
+            user_form.fields['password2'].initial = 'senha@123'
+
+            if user_form.is_valid():  # Validar o formulário de usuário depois de modificar os dados
+                # Salvar o usuário
+                user = user_form.save()
+
+                # Salvar o professor, associando o usuário criado
+                professor = form.save(commit=False)
+                professor.user = user  # Associa o usuário ao professor
+                professor.save()
+
+                # Se houver disciplinas associadas, associar ao professor
+                disciplinas = form.cleaned_data.get('disciplinas')
+                if disciplinas:
+                    professor.disciplinas.set(disciplinas)
+
+                return redirect('gerenciar_professores')
+            else:
+                print(user_form.errors)  # Para depuração
         else:
-            print(form.errors)  # Imprime os erros para depuração
+            print(form.errors)  # Para depuração
     else:
         form = ProfessorForm()
-    return render(request, 'core/cadastrar_professor.html', {'form': form})
+        user_form = UserCreationForm()  # Cria o formulário de usuário vazio
+
+    return render(request, 'core/cadastrar_professor.html', {
+        'form': form,
+        'user_form': user_form  # Passa o formulário de usuário para o template
+    })
 
 
 # ------------------------------------------------------------

@@ -53,6 +53,7 @@ class TurmaForm(forms.ModelForm):
 # Formulário Professor
 # ------------------------------------------------------------
 class ProfessorForm(forms.ModelForm):
+    
     # Campo para selecionar múltiplas disciplinas (opcional)
     disciplinas = forms.ModelMultipleChoiceField(
         queryset=Disciplina.objects.all(),

@@ -17,6 +17,9 @@
             <p><strong>Nome:</strong> {{ professor.nome }}</p>
         </div>
         <div class="mb-3">
+            <p><strong>Username:</strong> {{ professor.user.username }}</p> <!-- Exibe o username -->
+        </div>
+        <div class="mb-3">
             <p><strong>E-mail:</strong> {{ professor.email }}</p>
         </div>
         <div class="mb-3">
@@ -27,8 +30,14 @@
             <p><strong>Disciplinas Lecionadas:</strong> 
                 {% for disciplina in professor.disciplinas.all %}
                     {{ disciplina.nome }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Nenhuma disciplina
                 {% endfor %}
             </p>
+        </div>
+
+        <div class="mb-3">
+            <p><strong>Data de Criação:</strong> {{ professor.user.date_joined|date:"d/m/Y" }}</p> <!-- Exibe a data de criação da conta -->
         </div>
 
         <!-- Botão "Voltar" alinhado à esquerda -->

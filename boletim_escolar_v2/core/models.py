@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # ------------------------------------------------------------
 # Modelo Aluno
@@ -38,6 +39,7 @@ class Disciplina(models.Model):
 # Modelo Professor
 # ------------------------------------------------------------
 class Professor(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='professor_profile')  # Conexão com o User do Django
     nome = models.CharField(max_length=255)  # Nome completo do professor
     
     # Informações de contato (opcionais)
