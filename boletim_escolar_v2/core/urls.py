@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import ProfessorLoginView, professor_logout, ProfessorHomeView
+from .views import ProfessorLoginView, professor_logout, ProfessorHomeView, ProfessorPasswordChangeView
 
 urlpatterns = [
     # ------------------------------------------------------------
@@ -41,6 +41,8 @@ urlpatterns = [
     path('secretaria/gerenciar_professores/', views.gerenciar_professores, name='gerenciar_professores'),
     path('login_professor/', ProfessorLoginView.as_view(), name='login_professor'),
     path('logout_professor/', views.professor_logout, name='logout_professor'),
+    path('professor/mudar-senha/', ProfessorPasswordChangeView.as_view(), name='mudar_senha_professor'),
+
 
     # Editar, Excluir e Consultar Professor
     path('secretaria/editar_professor/<int:professor_id>/', views.editar_professor, name='editar_professor'),

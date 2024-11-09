@@ -4,16 +4,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Aluno, Turma, Professor, Disciplina
 from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login, authenticate
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from random import randint
-from django.contrib.auth import login, authenticate
 from django.contrib import messages
 
 
@@ -152,7 +151,12 @@ def cadastrar_aluno(request):
 # Gestão de Professores
 # ------------------------------------------------------------
 
+# View para mudar a senha do professor
+class ProfessorPasswordChangeView(PasswordChangeView):
+    template_name = 'core/password_change.html'
+    success_url = reverse_lazy('professor_home')  # Redireciona para a página inicial do professor após mudança de senha
 
+    
 class ProfessorLoginView(LoginView):
     template_name = 'core/login_professor.html'
     authentication_form = AuthenticationForm
@@ -178,7 +182,7 @@ class ProfessorHomeView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         messages.error(self.request, "Acesso restrito a professores.")
         return redirect('login_professor')
     
-    
+
     def get_context_data(self, **kwargs):
         # Obtemos o professor com base no usuário logado
         professor = self.request.user.professor_profile
