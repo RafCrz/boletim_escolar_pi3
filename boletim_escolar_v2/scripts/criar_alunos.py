@@ -1,5 +1,6 @@
 from faker import Faker
 from core.models import Aluno
+from django.contrib.auth.models import User
 
 # Inicializando o Faker
 fake = Faker('pt_BR')
@@ -16,8 +17,14 @@ def criar_alunos_aleatorios(n=80):
         email_responsavel = fake.email()
         telefone_responsavel = fake.phone_number()
 
+        # Criar usuário associado ao aluno
+        username = str(rm)
+        password = 'senha@123'
+        user = User.objects.create_user(username=username, password=password)
+
         # Criar e salvar o aluno no banco de dados
         Aluno.objects.create(
+            user=user,
             nome=nome,
             rm=str(rm),  # Garantir que seja tratado como string
             ra_rg=str(ra_rg),  # Garantir que seja tratado como string
