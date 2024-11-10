@@ -1,3 +1,5 @@
+#boletim_escolar_v2/core/forms.py
+
 from django import forms
 from .models import Aluno, Professor, Disciplina, Turma
 
@@ -5,25 +7,22 @@ from .models import Aluno, Professor, Disciplina, Turma
 # Formulário Aluno
 # ------------------------------------------------------------
 class AlunoForm(forms.ModelForm):
-    # Campo de data de nascimento com formato customizado
     data_nascimento = forms.DateField(
         widget=forms.DateInput(format='%d/%m/%Y', attrs={'placeholder': 'dd/mm/yyyy'}),
-        input_formats=['%d/%m/%Y', '%Y-%m-%d'],  # Permitir diferentes formatos de data
+        input_formats=['%d/%m/%Y', '%Y-%m-%d'],
     )
-    
-    # Campos de e-mail e telefone do responsável (opcionais)
     email_responsavel = forms.EmailField(
-        required=False,  # O campo é opcional
+        required=False,
         widget=forms.EmailInput(attrs={'placeholder': 'exemplo@dominio.com'})
     )
     telefone_responsavel = forms.CharField(
-        required=False,  # O campo é opcional
+        required=False,
         widget=forms.TextInput(attrs={'placeholder': '(xx) xxxx-xxxx'})
     )
 
     class Meta:
         model = Aluno
-        fields = '__all__'  # Inclui todos os campos do modelo Aluno
+        exclude = ['user']  # Exclui o campo user do formulário
 
 
 # ------------------------------------------------------------

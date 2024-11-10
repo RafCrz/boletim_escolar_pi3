@@ -1,3 +1,5 @@
+#boletim_escolar_v2/core/views.py
+
 # ------------------------------------------------------------
 # Importações
 # ------------------------------------------------------------
@@ -14,9 +16,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from random import randint
 from django.contrib import messages
-
-
-
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
 
 
 # ------------------------------------------------------------
@@ -100,6 +101,37 @@ def editar_turma(request, pk):
 # Gestão de Alunos
 # ------------------------------------------------------------
 
+
+
+def login_aluno(request):
+    if request.method == 'POST':
+        rm = request.POST['rm']
+        password = request.POST['password']
+        user = authenticate(request, username=rm, password=password)
+        if user is not None:
+            if hasattr(user, 'aluno_profile'):
+                login(request, user)
+                return redirect('aluno_home')
+            else:
+                messages.error(request, "Você não tem permissão para acessar esta página como aluno.")
+        else:
+            messages.error(request, "RM ou senha incorretos.")
+    return render(request, 'core/login_aluno.html')
+
+
+
+@login_required
+def aluno_home(request):
+    return render(request, 'core/aluno_home.html')
+
+
+
+
+
+
+
+
+
 # Gerenciar alunos (listar alunos)
 def gerenciar_alunos(request):
     query = request.GET.get('q', '')
@@ -135,16 +167,44 @@ def consultar_aluno(request, aluno_id):
     aluno = Aluno.objects.get(id=aluno_id)
     return render(request, 'core/consultar_aluno.html', {'aluno': aluno})
 
+
+# Função de logout do aluno
+def aluno_logout(request):
+    logout(request)
+    return redirect('login_aluno')
+
+
 # Cadastrar aluno
+
 def cadastrar_aluno(request):
     if request.method == 'POST':
         form = AlunoForm(request.POST)
-        if form.is_valid():
-            form.save()
+        user_form = UserCreationForm(request.POST)
+        if form.is_valid() and user_form.is_valid():
+            aluno = form.save(commit=False)
+            rm = form.cleaned_data['rm']
+            username = rm
+            print(f"RM: {rm}")
+            print(f"Username: {username}")
+            # Verificar se o username já existe
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "O RM já está em uso. Por favor, escolha outro.")
+                return render(request, 'core/cadastrar_aluno.html', {'form': form, 'user_form': user_form})
+            user = user_form.save(commit=False)
+            user.username = username
+            user.set_password(user_form.cleaned_data['password1'])
+            user.save()
+            aluno.user = user
+            aluno.save()
+            print("Aluno cadastrado com sucesso!")
             return redirect('gerenciar_alunos')
+        else:
+            print(form.errors)
+            print(user_form.errors)
     else:
         form = AlunoForm()
-    return render(request, 'core/cadastrar_aluno.html', {'form': form})
+        user_form = UserCreationForm()
+    return render(request, 'core/cadastrar_aluno.html', {'form': form, 'user_form': user_form})
 
 
 # ------------------------------------------------------------

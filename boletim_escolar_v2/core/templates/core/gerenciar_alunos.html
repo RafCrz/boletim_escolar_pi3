@@ -31,6 +31,7 @@
             <thead class="table-primary">
                 <tr>
                     <th>Nome</th>
+                    <th>RM</th> <!-- Nova coluna para RM -->
                     <th>Data de Nascimento</th>
                     <th>Status</th>
                     <th>Ações</th>
@@ -40,6 +41,7 @@
                 {% for aluno in alunos %}
                 <tr class="aluno-row">
                     <td>{{ aluno.nome }}</td>
+                    <td>{{ aluno.rm }}</td> <!-- Exibe o RM do aluno -->
                     <td>{{ aluno.data_nascimento|date:"d/m/Y" }}</td>
                     <td>{{ aluno.get_status_display }}</td>
                     <td>

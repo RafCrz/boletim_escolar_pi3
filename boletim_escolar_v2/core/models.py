@@ -1,3 +1,6 @@
+#boletim_escolar_v2/core/models.py
+
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -5,6 +8,7 @@ from django.contrib.auth.models import User
 # Modelo Aluno
 # ------------------------------------------------------------
 class Aluno(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='aluno_profile')
     nome = models.CharField(max_length=100)
     rm = models.CharField(max_length=20, unique=True)  # Registro de matrícula único
     ra_rg = models.CharField(max_length=20, blank=True, null=True)  # RA ou RG (opcional)

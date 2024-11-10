@@ -1,6 +1,9 @@
+# boletim_escolar_v2/core/urls.py
+
 from django.urls import path
 from . import views
-from .views import ProfessorLoginView, professor_logout, ProfessorHomeView, ProfessorPasswordChangeView
+from .views import ProfessorLoginView, professor_logout, ProfessorHomeView, ProfessorPasswordChangeView, login_aluno, cadastrar_aluno
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     # ------------------------------------------------------------
@@ -18,11 +21,16 @@ urlpatterns = [
     path('secretaria/editar_aluno/<int:aluno_id>/', views.editar_aluno, name='editar_aluno'),
     path('secretaria/excluir_aluno/<int:aluno_id>/', views.excluir_aluno, name='excluir_aluno'),
     path('secretaria/consultar_aluno/<int:aluno_id>/', views.consultar_aluno, name='consultar_aluno'),
+    path('login_aluno/', login_aluno, name='login_aluno'),
+    path('aluno_home/', views.aluno_home, name='aluno_home'),
+    path('logout/', LogoutView.as_view(), name='logout'),  # Adiciona a URL para logout
+    path('logout_aluno/', views.aluno_logout, name='logout_aluno'),  # Adiciona a URL para logout do aluno
 
     # ------------------------------------------------------------
     # Cadastro na Secretaria (Alunos, Professores, Disciplinas)
     # ------------------------------------------------------------
-    path('secretaria/cadastrar_aluno/', views.cadastrar_aluno, name='cadastrar_aluno'),
+    #path('secretaria/cadastrar_aluno/', views.cadastrar_aluno, name='cadastrar_aluno'),
+    path('secretaria/cadastrar_aluno/', cadastrar_aluno, name='cadastrar_aluno'),
     path('secretaria/cadastrar_professor/', views.cadastrar_professor, name='cadastrar_professor'),
     path('secretaria/cadastrar_disciplina/', views.cadastrar_disciplina, name='cadastrar_disciplina'),
 
@@ -42,7 +50,6 @@ urlpatterns = [
     path('login_professor/', ProfessorLoginView.as_view(), name='login_professor'),
     path('logout_professor/', views.professor_logout, name='logout_professor'),
     path('professor/mudar-senha/', ProfessorPasswordChangeView.as_view(), name='mudar_senha_professor'),
-
 
     # Editar, Excluir e Consultar Professor
     path('secretaria/editar_professor/<int:professor_id>/', views.editar_professor, name='editar_professor'),
