@@ -42,6 +42,7 @@ urlpatterns = [
     path('secretaria/editar_turma/<int:pk>/', views.editar_turma, name='editar_turma'),
     path('consultar_turma/<int:turma_id>/', views.consultar_turma, name='consultar_turma'),
     path('secretaria/excluir_turma/<int:pk>/', views.excluir_turma, name='excluir_turma'),
+    path('turma/<int:turma_id>/', views.detalhes_turma, name='detalhes_turma'),
 
     # ------------------------------------------------------------
     # Gestão de Professores

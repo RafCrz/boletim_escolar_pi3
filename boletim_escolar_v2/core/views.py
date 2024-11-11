@@ -4,7 +4,7 @@
 # Importações
 # ------------------------------------------------------------
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Aluno, Turma, Professor, Disciplina
+from .models import Aluno, Turma, Professor, Disciplina, Nota
 from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib.auth.decorators import login_required
@@ -127,7 +127,29 @@ def aluno_home(request):
 
 
 
-
+@login_required
+def detalhes_turma(request, turma_id):
+    turma = get_object_or_404(Turma, id=turma_id)
+    alunos = turma.alunos.all()
+    disciplinas = Disciplina.objects.filter(professores__in=turma.professores.all()).distinct()
+    
+    if request.method == 'POST':
+        for aluno in alunos:
+            for disciplina in disciplinas:
+                nota, created = Nota.objects.get_or_create(aluno=aluno, disciplina=disciplina)
+                nota.nota_bimestre1 = request.POST.get(f'nota_bimestre1_{aluno.id}', nota.nota_bimestre1) or 0
+                nota.faltas_bimestre1 = request.POST.get(f'faltas_bimestre1_{aluno.id}', nota.faltas_bimestre1) or 0
+                nota.nota_bimestre2 = request.POST.get(f'nota_bimestre2_{aluno.id}', nota.nota_bimestre2) or 0
+                nota.faltas_bimestre2 = request.POST.get(f'faltas_bimestre2_{aluno.id}', nota.faltas_bimestre2) or 0
+                nota.nota_bimestre3 = request.POST.get(f'nota_bimestre3_{aluno.id}', nota.nota_bimestre3) or 0
+                nota.faltas_bimestre3 = request.POST.get(f'faltas_bimestre3_{aluno.id}', nota.faltas_bimestre3) or 0
+                nota.nota_bimestre4 = request.POST.get(f'nota_bimestre4_{aluno.id}', nota.nota_bimestre4) or 0
+                nota.faltas_bimestre4 = request.POST.get(f'faltas_bimestre4_{aluno.id}', nota.faltas_bimestre4) or 0
+                nota.status_final = request.POST.get(f'status_final_{aluno.id}', nota.status_final)
+                nota.save()
+        return redirect('detalhes_turma', turma_id=turma.id)
+    
+    return render(request, 'core/detalhes_turma.html', {'turma': turma, 'alunos': alunos})
 
 
 
