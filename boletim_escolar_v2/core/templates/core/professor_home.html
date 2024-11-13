@@ -30,7 +30,9 @@
                     <td>{{ turma.classe }}</td>
                     <td>{{ turma.ano }}</td>
                     <td>
-                        <a href="{% url 'detalhes_turma' turma.id %}" class="btn btn-info btn-sm">Ver Detalhes</a>
+                        {% for disciplina in user.professor_profile.disciplinas.all %}
+                        <a href="{% url 'adicionar_notas' turma.id disciplina.id %}" class="btn btn-primary btn-sm">Adicionar Notas - {{ disciplina.nome }}</a>
+                        {% endfor %}
                     </td>
                 </tr>
                 {% empty %}
