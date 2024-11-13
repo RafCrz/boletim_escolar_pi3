@@ -291,7 +291,6 @@ class CoreConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'core'
 
-
 # --------------------------------------------------
 # Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\forms.py
 # --------------------------------------------------
@@ -572,7 +571,6 @@ urlpatterns = [
     path('disciplinas/consultar/<int:disciplina_id>/', views.consultar_disciplina, name='consultar_disciplina'),
     path('disciplinas/cadastrar/', views.cadastrar_disciplina, name='cadastrar_disciplina'),
 ]
-
 
 # --------------------------------------------------
 # Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\views.py
@@ -2331,7 +2329,6 @@ class Migration(migrations.Migration):
 </body>
 </html>
 
-
 # --------------------------------------------------
 # Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\templates\core\editar_aluno.html
 # --------------------------------------------------
@@ -3328,7 +3325,6 @@ class Migration(migrations.Migration):
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
 
 # --------------------------------------------------
 # Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\templates\core\secretaria.html
