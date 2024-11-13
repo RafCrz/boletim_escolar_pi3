@@ -133,11 +133,13 @@ def aluno_home(request):
 def adicionar_notas(request, turma_id, disciplina_id):
     turma = get_object_or_404(Turma, id=turma_id)
     disciplina = get_object_or_404(Disciplina, id=disciplina_id)
-    alunos = turma.alunos.all()
+    # Ordena os alunos pelo nome em ordem alfabética
+    alunos = turma.alunos.all().order_by('nome')
     
     if request.method == 'POST':
         for aluno in alunos:
             nota, created = Nota.objects.get_or_create(aluno=aluno, disciplina=disciplina)
+            # Salva as notas e faltas de cada bimestre
             nota.nota_bimestre1 = float(request.POST.get(f'nota_bimestre1_{aluno.id}', 0))
             nota.faltas_bimestre1 = int(request.POST.get(f'faltas_bimestre1_{aluno.id}', 0))
             nota.nota_bimestre2 = float(request.POST.get(f'nota_bimestre2_{aluno.id}', 0))
@@ -146,96 +148,23 @@ def adicionar_notas(request, turma_id, disciplina_id):
             nota.faltas_bimestre3 = int(request.POST.get(f'faltas_bimestre3_{aluno.id}', 0))
             nota.nota_bimestre4 = float(request.POST.get(f'nota_bimestre4_{aluno.id}', 0))
             nota.faltas_bimestre4 = int(request.POST.get(f'faltas_bimestre4_{aluno.id}', 0))
+            
+            # Calcula a média final e atualiza o status
+            nota.media_final = (nota.nota_bimestre1 + nota.nota_bimestre2 + nota.nota_bimestre3 + nota.nota_bimestre4) / 4
+            nota.status_final = request.POST.get(f'status_final_{aluno.id}', 'P')
+            
             nota.save()
         return redirect('adicionar_notas', turma_id=turma.id, disciplina_id=disciplina.id)
     
-    # Cria uma lista de tuplas (aluno, nota)
-    alunos_notas = []
-    for aluno in alunos:
-        nota = Nota.objects.filter(aluno=aluno, disciplina=disciplina).first()
-        alunos_notas.append((aluno, nota))
+    # Carrega as notas existentes e informações dos alunos
+    alunos_notas = [(aluno, Nota.objects.filter(aluno=aluno, disciplina=disciplina).first()) for aluno in alunos]
     
     return render(request, 'core/adicionar_notas.html', {
         'turma': turma,
         'disciplina': disciplina,
-        'alunos_notas': alunos_notas
+        'alunos_notas': alunos_notas,
+        'status_choices': Nota.STATUS_CHOICES  # Passa as opções de status para o template
     })
-
-
-# @login_required
-# def adicionar_notas(request, turma_id, disciplina_id):
-#     turma = get_object_or_404(Turma, id=turma_id)
-#     disciplina = get_object_or_404(Disciplina, id=disciplina_id)
-#     alunos = turma.alunos.all()
-
-#     if request.method == 'POST':
-#         print("Iniciando o processo de salvamento das notas e faltas")
-#         for aluno in alunos:
-#             try:
-#                 # Obtém ou cria o registro de nota para o aluno na disciplina
-#                 nota, created = Nota.objects.get_or_create(aluno=aluno, disciplina=disciplina)
-#                 print(f"Processando aluno {aluno.nome} - ID: {aluno.id}")
-
-#                 # Captura os valores do formulário e usa `0` como padrão se estiver vazio
-#                 nota.nota_bimestre1 = float(request.POST.get(f'nota_bimestre1_{aluno.id}') or 0)
-#                 nota.faltas_bimestre1 = int(request.POST.get(f'faltas_bimestre1_{aluno.id}') or 0)
-#                 nota.nota_bimestre2 = float(request.POST.get(f'nota_bimestre2_{aluno.id}') or 0)
-#                 nota.faltas_bimestre2 = int(request.POST.get(f'faltas_bimestre2_{aluno.id}') or 0)
-#                 nota.nota_bimestre3 = float(request.POST.get(f'nota_bimestre3_{aluno.id}') or 0)
-#                 nota.faltas_bimestre3 = int(request.POST.get(f'faltas_bimestre3_{aluno.id}') or 0)
-#                 nota.nota_bimestre4 = float(request.POST.get(f'nota_bimestre4_{aluno.id}') or 0)
-#                 nota.faltas_bimestre4 = int(request.POST.get(f'faltas_bimestre4_{aluno.id}') or 0)
-
-#                 # Salva a nota e faltas do aluno no banco de dados
-#                 nota.save()
-#                 print(f"Notas e faltas salvas para {aluno.nome}")
-
-#             except Exception as e:
-#                 # Captura e imprime qualquer erro ocorrido durante o processo de salvamento
-#                 print(f"Erro ao salvar as notas para o aluno {aluno.nome}: {e}")
-
-#         # Redireciona para evitar o reenvio do formulário
-#         print("Redirecionando após salvar notas")
-#         return redirect('adicionar_notas', turma_id=turma.id, disciplina_id=disciplina.id)
-
-#     # Cria um dicionário com as notas para preencher o formulário
-#     notas = {aluno.id: Nota.objects.filter(aluno=aluno, disciplina=disciplina).first() for aluno in alunos}
-#     print("Notas carregadas para o formulário:", notas)
-#     return render(request, 'core/adicionar_notas.html', {'turma': turma, 'disciplina': disciplina, 'alunos': alunos, 'notas': notas})
-
-
-
-
-
-
-
-
-
-# @login_required
-# def detalhes_turma(request, turma_id):
-#     turma = get_object_or_404(Turma, id=turma_id)
-#     alunos = turma.alunos.all()
-#     disciplinas = Disciplina.objects.filter(professores__in=turma.professores.all()).distinct()
-    
-#     if request.method == 'POST':
-#         for aluno in alunos:
-#             for disciplina in disciplinas:
-#                 nota, created = Nota.objects.get_or_create(aluno=aluno, disciplina=disciplina)
-#                 nota.nota_bimestre1 = request.POST.get(f'nota_bimestre1_{aluno.id}', nota.nota_bimestre1) or 0
-#                 nota.faltas_bimestre1 = request.POST.get(f'faltas_bimestre1_{aluno.id}', nota.faltas_bimestre1) or 0
-#                 nota.nota_bimestre2 = request.POST.get(f'nota_bimestre2_{aluno.id}', nota.nota_bimestre2) or 0
-#                 nota.faltas_bimestre2 = request.POST.get(f'faltas_bimestre2_{aluno.id}', nota.faltas_bimestre2) or 0
-#                 nota.nota_bimestre3 = request.POST.get(f'nota_bimestre3_{aluno.id}', nota.nota_bimestre3) or 0
-#                 nota.faltas_bimestre3 = request.POST.get(f'faltas_bimestre3_{aluno.id}', nota.faltas_bimestre3) or 0
-#                 nota.nota_bimestre4 = request.POST.get(f'nota_bimestre4_{aluno.id}', nota.nota_bimestre4) or 0
-#                 nota.faltas_bimestre4 = request.POST.get(f'faltas_bimestre4_{aluno.id}', nota.faltas_bimestre4) or 0
-#                 nota.status_final = request.POST.get(f'status_final_{aluno.id}', nota.status_final)
-#                 nota.save()
-#         return redirect('detalhes_turma', turma_id=turma.id)
-    
-#     return render(request, 'core/detalhes_turma.html', {'turma': turma, 'alunos': alunos})
-
-
 
 
 # Gerenciar alunos (listar alunos)
