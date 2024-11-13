@@ -120,9 +120,35 @@ def login_aluno(request):
 
 
 
+
+
+
+
+
+
+
 @login_required
 def aluno_home(request):
-    return render(request, 'core/aluno_home.html')
+    aluno = request.user.aluno_profile  # Acessa o perfil do aluno logado, assumindo que você tenha um perfil de aluno
+    notas = Nota.objects.filter(aluno=aluno)  # Filtra as notas do aluno logado
+
+    return render(request, 'core/aluno_home.html', {
+        'notas': notas  # Passa as notas para o template
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -241,7 +267,11 @@ def cadastrar_aluno(request):
         user_form = UserCreationForm()
     return render(request, 'core/cadastrar_aluno.html', {'form': form, 'user_form': user_form})
 
-
+# View para mudar a senha do aluno
+class AlunoPasswordChangeView(PasswordChangeView):
+    template_name = 'core/password_change.html'  # O template para a alteração de senha
+    success_url = reverse_lazy('aluno_home')  # Redireciona para a página inicial do aluno após mudança de senha
+    
 # ------------------------------------------------------------
 # Gestão de Professores
 # ------------------------------------------------------------
