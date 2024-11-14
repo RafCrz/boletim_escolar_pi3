@@ -20,6 +20,9 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 
 
+import requests
+
+
 # ------------------------------------------------------------
 # Páginas Gerais (Index, Professor, Aluno, Secretaria)
 # ------------------------------------------------------------
@@ -35,6 +38,16 @@ def aluno(request):
 
 def secretaria(request):
     return render(request, 'core/secretaria.html')
+
+def faq(request):
+    return render(request, 'core/faq.html')
+
+
+
+# ------------------------------------------------------------
+# Gestão de Turmas
+# ------------------------------------------------------------
+
 
 
 # ------------------------------------------------------------

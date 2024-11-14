@@ -1,9 +1,11 @@
 # boletim_escolar_v2/core/urls.py
 
-from django.urls import path
+from django.urls import path, include
 from . import views
 from .views import ProfessorLoginView, professor_logout, ProfessorHomeView, ProfessorPasswordChangeView, login_aluno, cadastrar_aluno, AlunoPasswordChangeView
 from django.contrib.auth.views import LogoutView
+from django.contrib import admin
+
 
 urlpatterns = [
     # ------------------------------------------------------------
@@ -13,6 +15,10 @@ urlpatterns = [
     path('professor/', ProfessorHomeView.as_view(), name='professor_home'),
     path('aluno/', views.aluno, name='aluno'),  # Página do aluno
     path('secretaria/', views.secretaria, name='secretaria'),  # Página da secretaria
+    path('faq/', views.faq, name='faq'),  # Adiciona a URL para a página de FAQ
+
+
+
 
     # ------------------------------------------------------------
     # Gestão de Alunos
