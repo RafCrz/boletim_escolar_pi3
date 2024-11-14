@@ -5,7 +5,7 @@ from . import views
 from .views import ProfessorLoginView, professor_logout, ProfessorHomeView, ProfessorPasswordChangeView, login_aluno, cadastrar_aluno, AlunoPasswordChangeView
 from django.contrib.auth.views import LogoutView
 from django.contrib import admin
-
+from .views import SecretariaLoginView, secretaria_home
 
 urlpatterns = [
     # ------------------------------------------------------------
@@ -42,6 +42,10 @@ urlpatterns = [
     path('secretaria/cadastrar_professor/', views.cadastrar_professor, name='cadastrar_professor'),
     path('secretaria/cadastrar_disciplina/', views.cadastrar_disciplina, name='cadastrar_disciplina'),
 
+    path('login_secretaria/', SecretariaLoginView.as_view(), name='login_secretaria'),
+    path('secretaria_home/', secretaria_home, name='secretaria_home'),
+    path('logout_secretaria/', views.secretaria_logout, name='logout_secretaria'),
+
     # ------------------------------------------------------------
     # Gestão de Turmas
     # ------------------------------------------------------------
@@ -50,7 +54,6 @@ urlpatterns = [
     path('secretaria/editar_turma/<int:pk>/', views.editar_turma, name='editar_turma'),
     path('consultar_turma/<int:turma_id>/', views.consultar_turma, name='consultar_turma'),
     path('secretaria/excluir_turma/<int:pk>/', views.excluir_turma, name='excluir_turma'),
-    #path('turma/<int:turma_id>/', views.detalhes_turma, name='detalhes_turma'),
     path('turma/<int:turma_id>/disciplina/<int:disciplina_id>/adicionar_notas/', views.adicionar_notas, name='adicionar_notas'),
 
 

@@ -1,7 +1,17 @@
 #boletim_escolar_v2/core/forms.py
 
 from django import forms
-from .models import Aluno, Professor, Disciplina, Turma
+from .models import Aluno, Professor, Disciplina, Turma, Secretaria
+
+
+# ------------------------------------------------------------
+# Formulário Secretaria
+# ------------------------------------------------------------
+class SecretariaForm(forms.ModelForm):
+    class Meta:
+        model = Secretaria
+        fields = ['nome', 'email', 'telefone']
+
 
 # ------------------------------------------------------------
 # Formulário Aluno

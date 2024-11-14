@@ -271,7 +271,7 @@ application = get_wsgi_application()
 
 from django.contrib import admin
 
-from .models import Aluno, Professor, Turma, Disciplina, Nota
+from .models import Aluno, Professor, Turma, Disciplina, Nota, Secretaria
 
 # Registrar os modelos no admin
 admin.site.register(Aluno)
@@ -279,6 +279,7 @@ admin.site.register(Professor)
 admin.site.register(Turma)
 admin.site.register(Disciplina)
 admin.site.register(Nota)
+admin.site.register(Secretaria)
 
 # --------------------------------------------------
 # Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\apps.py
@@ -298,7 +299,17 @@ class CoreConfig(AppConfig):
 #boletim_escolar_v2/core/forms.py
 
 from django import forms
-from .models import Aluno, Professor, Disciplina, Turma
+from .models import Aluno, Professor, Disciplina, Turma, Secretaria
+
+
+# ------------------------------------------------------------
+# Formulário Secretaria
+# ------------------------------------------------------------
+class SecretariaForm(forms.ModelForm):
+    class Meta:
+        model = Secretaria
+        fields = ['nome', 'email', 'telefone']
+
 
 # ------------------------------------------------------------
 # Formulário Aluno
@@ -379,6 +390,22 @@ class DisciplinaForm(forms.ModelForm):
 
 from django.db import models
 from django.contrib.auth.models import User
+
+
+
+# ------------------------------------------------------------
+# Modelo Secretaria
+# ------------------------------------------------------------
+
+class Secretaria(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='secretaria_profile')
+    nome = models.CharField(max_length=255)
+    email = models.EmailField(max_length=100, blank=True, null=True)
+    telefone = models.CharField(max_length=15, blank=True, null=True)
+
+    def __str__(self):
+        return self.nome
+    
 
 # ------------------------------------------------------------
 # Modelo Aluno
@@ -510,7 +537,7 @@ from . import views
 from .views import ProfessorLoginView, professor_logout, ProfessorHomeView, ProfessorPasswordChangeView, login_aluno, cadastrar_aluno, AlunoPasswordChangeView
 from django.contrib.auth.views import LogoutView
 from django.contrib import admin
-
+from .views import SecretariaLoginView, secretaria_home
 
 urlpatterns = [
     # ------------------------------------------------------------
@@ -547,6 +574,10 @@ urlpatterns = [
     path('secretaria/cadastrar_professor/', views.cadastrar_professor, name='cadastrar_professor'),
     path('secretaria/cadastrar_disciplina/', views.cadastrar_disciplina, name='cadastrar_disciplina'),
 
+    path('login_secretaria/', SecretariaLoginView.as_view(), name='login_secretaria'),
+    path('secretaria_home/', secretaria_home, name='secretaria_home'),
+    path('logout_secretaria/', views.secretaria_logout, name='logout_secretaria'),
+
     # ------------------------------------------------------------
     # Gestão de Turmas
     # ------------------------------------------------------------
@@ -555,7 +586,6 @@ urlpatterns = [
     path('secretaria/editar_turma/<int:pk>/', views.editar_turma, name='editar_turma'),
     path('consultar_turma/<int:turma_id>/', views.consultar_turma, name='consultar_turma'),
     path('secretaria/excluir_turma/<int:pk>/', views.excluir_turma, name='excluir_turma'),
-    #path('turma/<int:turma_id>/', views.detalhes_turma, name='detalhes_turma'),
     path('turma/<int:turma_id>/disciplina/<int:disciplina_id>/adicionar_notas/', views.adicionar_notas, name='adicionar_notas'),
 
 
@@ -592,8 +622,8 @@ urlpatterns = [
 # Importações
 # ------------------------------------------------------------
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Aluno, Turma, Professor, Disciplina, Nota
-from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm
+from .models import Aluno, Turma, Professor, Disciplina, Nota, Secretaria
+from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm, SecretariaForm
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, login, authenticate
@@ -606,9 +636,6 @@ from random import randint
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-
-
-import requests
 
 
 # ------------------------------------------------------------
@@ -633,10 +660,31 @@ def faq(request):
 
 
 # ------------------------------------------------------------
-# Gestão de Turmas
+# Gestão de Secretaria
 # ------------------------------------------------------------
 
+class SecretariaLoginView(LoginView):
+    template_name = 'core/login_secretaria.html'
+    authentication_form = AuthenticationForm
 
+    def form_valid(self, form):
+        user = form.get_user()
+        if hasattr(user, 'secretaria_profile'):
+            login(self.request, user)
+            return redirect('secretaria_home')
+        else:
+            messages.error(self.request, "Você não tem permissão para acessar esta página como secretaria.")
+            return redirect('login_secretaria')
+
+@login_required
+def secretaria_home(request):
+    secretaria = request.user.secretaria_profile
+    return render(request, 'core/secretaria_home.html', {'secretaria': secretaria})
+
+
+def secretaria_logout(request):
+    logout(request)
+    return redirect('login_secretaria')  # Redireciona para a página de login da secretaria
 
 # ------------------------------------------------------------
 # Gestão de Turmas
@@ -1625,6 +1673,38 @@ class Migration(migrations.Migration):
             name='user',
             field=models.OneToOneField(default=13, on_delete=django.db.models.deletion.CASCADE, related_name='aluno_profile', to=settings.AUTH_USER_MODEL),
             preserve_default=False,
+        ),
+    ]
+
+
+# --------------------------------------------------
+# Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\migrations\0016_secretaria.py
+# --------------------------------------------------
+
+# Generated by Django 5.1.2 on 2024-11-14 11:33
+
+import django.db.models.deletion
+from django.conf import settings
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('core', '0015_aluno_user'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='Secretaria',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('nome', models.CharField(max_length=255)),
+                ('email', models.EmailField(blank=True, max_length=100, null=True)),
+                ('telefone', models.CharField(blank=True, max_length=15, null=True)),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='secretaria_profile', to=settings.AUTH_USER_MODEL)),
+            ],
         ),
     ]
 
@@ -3608,6 +3688,8 @@ class Migration(migrations.Migration):
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Link do seu CSS personalizado -->
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-5">
@@ -3619,7 +3701,7 @@ class Migration(migrations.Migration):
             <a href="{% url 'login_aluno' %}" class="list-group-item list-group-item-action">
                 <i class="bi bi-person-badge me-2"></i> Aluno
             </a>
-            <a href="{% url 'secretaria' %}" class="list-group-item list-group-item-action">
+            <a href="{% url 'login_secretaria' %}" class="list-group-item list-group-item-action">
                 <i class="bi bi-house-door-fill me-2"></i> Secretaria
             </a>
             <a href="/admin/" class="list-group-item list-group-item-action">
@@ -3630,7 +3712,6 @@ class Migration(migrations.Migration):
             </a>
         </div>
     </div>
-
     <!-- vLibras -->
     <div vw class="enabled">
         <div vw-access-button class="active"></div>
@@ -3643,7 +3724,6 @@ class Migration(migrations.Migration):
         new window.VLibras.Widget('https://vlibras.gov.br/app');
     </script>
     <!-- Fim do vLibras -->
-
     <!-- Alerta de Clima Centralizado -->
     <div class="container mt-4 text-center">
         <div id="openweathermap-widget-13" class="d-inline-block"></div>
@@ -3666,14 +3746,10 @@ class Migration(migrations.Migration):
             })();
         </script>
     </div>
-
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Script do Bootstrap para funcionalidades JS (opcional) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
 
 # --------------------------------------------------
 # Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\templates\core\login_aluno.html
@@ -3803,6 +3879,55 @@ class Migration(migrations.Migration):
 </body>
 </html>
 
+
+# --------------------------------------------------
+# Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\templates\core\login_secretaria.html
+# --------------------------------------------------
+
+<!-- login_secretaria.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Secretaria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4 text-dark">Login - Secretaria</h1>
+        <div class="card p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    <label for="id_username">Usuário</label>
+                    <input type="text" name="username" id="id_username" class="form-control" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="id_password">Senha</label>
+                    <input type="password" name="password" id="id_password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+            </form>
+            {% if messages %}
+            <div class="alert alert-danger mt-3">
+                <ul>
+                    {% for message in messages %}
+                    <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-3">
+            <a href="{% url 'index' %}" class="btn btn-secondary">Voltar para a Página Inicial</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 
 # --------------------------------------------------
 # Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\templates\core\password_change.html
@@ -4017,6 +4142,67 @@ class Migration(migrations.Migration):
 </body>
 </html>
 
+
+# --------------------------------------------------
+# Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\core\templates\core\secretaria_home.html
+# --------------------------------------------------
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Cadastros - Secretaria</title>
+    <!-- Link do CSS do Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link do seu CSS personalizado -->
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4 text-dark">Gerenciamento de Cadastros - Secretaria</h1>
+        <!-- Lista com links de navegação -->
+        <div class="list-group">
+            <a href="{% url 'gerenciar_alunos' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-person-lines-fill me-2"></i> Gerenciar Alunos
+            </a>
+            <a href="{% url 'gerenciar_turmas' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-house-door-fill me-2"></i> Gerenciar Classes
+            </a>
+            <a href="{% url 'gerenciar_professores' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-person-plus-fill me-2"></i> Gerenciar Professores
+            </a>
+            <a href="{% url 'gerenciar_disciplinas' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-book-fill me-2"></i> Gerenciar Disciplinas
+            </a>
+            <!-- Formulário de logout -->
+            <form method="post" action="{% url 'logout_secretaria' %}" class="list-group-item list-group-item-action">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-link p-0" style="text-decoration: none; color: inherit;">
+                    <i class="bi bi-arrow-left-circle-fill me-2"></i> Sair
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- vLibras -->
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+    <script>
+        new window.VLibras.Widget('https://vlibras.gov.br/app');
+    </script>
+    <!-- Fim do vLibras -->
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Script do Bootstrap para funcionalidades JS (opcional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 
 # --------------------------------------------------
 # Arquivo: D:\My Documents\Download\Curso Django\Projetos\VisualCode\Boletim_online_v2\boletim_escolar_v2\scripts\criar_alunos.py

@@ -4,6 +4,22 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+
+# ------------------------------------------------------------
+# Modelo Secretaria
+# ------------------------------------------------------------
+
+class Secretaria(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='secretaria_profile')
+    nome = models.CharField(max_length=255)
+    email = models.EmailField(max_length=100, blank=True, null=True)
+    telefone = models.CharField(max_length=15, blank=True, null=True)
+
+    def __str__(self):
+        return self.nome
+    
+
 # ------------------------------------------------------------
 # Modelo Aluno
 # ------------------------------------------------------------

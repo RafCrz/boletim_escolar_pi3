@@ -4,8 +4,8 @@
 # Importações
 # ------------------------------------------------------------
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Aluno, Turma, Professor, Disciplina, Nota
-from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm
+from .models import Aluno, Turma, Professor, Disciplina, Nota, Secretaria
+from .forms import AlunoForm, TurmaForm, ProfessorForm, DisciplinaForm, SecretariaForm
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, login, authenticate
@@ -18,9 +18,6 @@ from random import randint
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
-
-
-import requests
 
 
 # ------------------------------------------------------------
@@ -45,10 +42,31 @@ def faq(request):
 
 
 # ------------------------------------------------------------
-# Gestão de Turmas
+# Gestão de Secretaria
 # ------------------------------------------------------------
 
+class SecretariaLoginView(LoginView):
+    template_name = 'core/login_secretaria.html'
+    authentication_form = AuthenticationForm
 
+    def form_valid(self, form):
+        user = form.get_user()
+        if hasattr(user, 'secretaria_profile'):
+            login(self.request, user)
+            return redirect('secretaria_home')
+        else:
+            messages.error(self.request, "Você não tem permissão para acessar esta página como secretaria.")
+            return redirect('login_secretaria')
+
+@login_required
+def secretaria_home(request):
+    secretaria = request.user.secretaria_profile
+    return render(request, 'core/secretaria_home.html', {'secretaria': secretaria})
+
+
+def secretaria_logout(request):
+    logout(request)
+    return redirect('login_secretaria')  # Redireciona para a página de login da secretaria
 
 # ------------------------------------------------------------
 # Gestão de Turmas
