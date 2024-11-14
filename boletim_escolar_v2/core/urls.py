@@ -5,7 +5,7 @@ from . import views
 from .views import ProfessorLoginView, professor_logout, ProfessorHomeView, ProfessorPasswordChangeView, login_aluno, cadastrar_aluno, AlunoPasswordChangeView
 from django.contrib.auth.views import LogoutView
 from django.contrib import admin
-from .views import SecretariaLoginView, secretaria_home
+from .views import SecretariaLoginView, secretaria_home, dashboard
 
 urlpatterns = [
     # ------------------------------------------------------------
@@ -32,6 +32,8 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),  # Adiciona a URL para logout
     path('logout_aluno/', views.aluno_logout, name='logout_aluno'),  # Adiciona a URL para logout do aluno
     path('mudar_senha_aluno/', AlunoPasswordChangeView.as_view(), name='mudar_senha_aluno'),
+
+    path('dashboard/', dashboard, name='dashboard'),
 
 
     # ------------------------------------------------------------

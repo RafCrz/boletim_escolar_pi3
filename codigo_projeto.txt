@@ -537,7 +537,7 @@ from . import views
 from .views import ProfessorLoginView, professor_logout, ProfessorHomeView, ProfessorPasswordChangeView, login_aluno, cadastrar_aluno, AlunoPasswordChangeView
 from django.contrib.auth.views import LogoutView
 from django.contrib import admin
-from .views import SecretariaLoginView, secretaria_home
+from .views import SecretariaLoginView, secretaria_home, dashboard
 
 urlpatterns = [
     # ------------------------------------------------------------
@@ -564,6 +564,8 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),  # Adiciona a URL para logout
     path('logout_aluno/', views.aluno_logout, name='logout_aluno'),  # Adiciona a URL para logout do aluno
     path('mudar_senha_aluno/', AlunoPasswordChangeView.as_view(), name='mudar_senha_aluno'),
+
+    path('dashboard/', dashboard, name='dashboard'),
 
 
     # ------------------------------------------------------------
@@ -637,6 +639,16 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 
+from django.http import HttpResponse
+
+import matplotlib
+matplotlib.use('Agg')  # Define o backend para evitar interface gráfica
+
+import matplotlib.pyplot as plt
+import pandas as pd
+from django.db.models import Avg
+from io import BytesIO
+
 
 # ------------------------------------------------------------
 # Páginas Gerais (Index, Professor, Aluno, Secretaria)
@@ -656,6 +668,48 @@ def secretaria(request):
 
 def faq(request):
     return render(request, 'core/faq.html')
+
+
+
+
+
+def dashboard(request):
+    aluno = request.user.aluno_profile
+    notas = Nota.objects.filter(aluno=aluno)
+    disciplinas = notas.values_list('disciplina__nome', flat=True).distinct()
+    data = {'Bimestre': ['1º Bimestre', '2º Bimestre', '3º Bimestre', '4º Bimestre']}
+
+    for disciplina in disciplinas:
+        notas_disciplina = notas.filter(disciplina__nome=disciplina)
+        data[disciplina] = [
+            notas_disciplina.aggregate(Avg('nota_bimestre1'))['nota_bimestre1__avg'],
+            notas_disciplina.aggregate(Avg('nota_bimestre2'))['nota_bimestre2__avg'],
+            notas_disciplina.aggregate(Avg('nota_bimestre3'))['nota_bimestre3__avg'],
+            notas_disciplina.aggregate(Avg('nota_bimestre4'))['nota_bimestre4__avg']
+        ]
+
+    df = pd.DataFrame(data)
+    plt.figure(figsize=(10, 5))
+
+    for disciplina in disciplinas:
+        plt.plot(df['Bimestre'], df[disciplina], marker='o', label=disciplina)
+
+    plt.title('Desempenho por Bimestres')
+    plt.xlabel('Bimestres')
+    plt.ylabel('Notas')
+    plt.legend()
+    plt.grid(True)
+    
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    return HttpResponse(buffer, content_type='image/png')
+
+
+
+
+
+
 
 
 
@@ -1748,14 +1802,14 @@ class Migration(migrations.Migration):
                     <thead class="table-primary">
                         <tr>
                             <th class="col-md-2">Aluno</th>
-                            <th class="col-md-1">Nota 1º</th>
-                            <th class="col-md-1">Faltas 1º</th>
-                            <th class="col-md-1">Nota 2º</th>
-                            <th class="col-md-1">Faltas 2º</th>
-                            <th class="col-md-1">Nota 3º</th>
-                            <th class="col-md-1">Faltas 3º</th>
-                            <th class="col-md-1">Nota 4º</th>
-                            <th class="col-md-1">Faltas 4º</th>
+                            <th class="col-md-1">Nota 1º Bim.</th>
+                            <th class="col-md-1">Faltas 1º Bim.</th>
+                            <th class="col-md-1">Nota 2º Bim.</th>
+                            <th class="col-md-1">Faltas 2º Bim.</th>
+                            <th class="col-md-1">Nota 3º Bim.</th>
+                            <th class="col-md-1">Faltas 3º Bim.</th>
+                            <th class="col-md-1">Nota 4º Bim.</th>
+                            <th class="col-md-1">Faltas 4º Bim.</th>
                             <th class="col-md-1">Média</th>
                             <th class="col-md-2">Status Final</th>
                         </tr>
@@ -1908,23 +1962,26 @@ class Migration(migrations.Migration):
                 </tbody>
             </table>
         </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'dashboard' %}" target="_blank" class="btn btn-info">Dashboard</a>
+        </div>
     </div>
 
-        <!-- vLibras -->
-        <div vw class="enabled">
-            <div vw-access-button class="active"></div>
-            <div vw-plugin-wrapper>
-              <div class="vw-plugin-top-wrapper"></div>
-            </div>
-          </div>
-          <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
-          <script>
-            new window.VLibras.Widget('https://vlibras.gov.br/app');
-          </script>
-          <!-- Fim do vLibras -->
-           
+    <!-- vLibras -->
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
 
+    <!-- Scripts -->
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Initialize VLibras -->
+    <script>new window.VLibras.Widget('https://vlibras.gov.br/app');</script>
 </body>
 </html>
 

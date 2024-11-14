@@ -19,6 +19,16 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 
+from django.http import HttpResponse
+
+import matplotlib
+matplotlib.use('Agg')  # Define o backend para evitar interface gráfica
+
+import matplotlib.pyplot as plt
+import pandas as pd
+from django.db.models import Avg
+from io import BytesIO
+
 
 # ------------------------------------------------------------
 # Páginas Gerais (Index, Professor, Aluno, Secretaria)
@@ -38,6 +48,48 @@ def secretaria(request):
 
 def faq(request):
     return render(request, 'core/faq.html')
+
+
+
+
+
+def dashboard(request):
+    aluno = request.user.aluno_profile
+    notas = Nota.objects.filter(aluno=aluno)
+    disciplinas = notas.values_list('disciplina__nome', flat=True).distinct()
+    data = {'Bimestre': ['1º Bimestre', '2º Bimestre', '3º Bimestre', '4º Bimestre']}
+
+    for disciplina in disciplinas:
+        notas_disciplina = notas.filter(disciplina__nome=disciplina)
+        data[disciplina] = [
+            notas_disciplina.aggregate(Avg('nota_bimestre1'))['nota_bimestre1__avg'],
+            notas_disciplina.aggregate(Avg('nota_bimestre2'))['nota_bimestre2__avg'],
+            notas_disciplina.aggregate(Avg('nota_bimestre3'))['nota_bimestre3__avg'],
+            notas_disciplina.aggregate(Avg('nota_bimestre4'))['nota_bimestre4__avg']
+        ]
+
+    df = pd.DataFrame(data)
+    plt.figure(figsize=(10, 5))
+
+    for disciplina in disciplinas:
+        plt.plot(df['Bimestre'], df[disciplina], marker='o', label=disciplina)
+
+    plt.title('Desempenho por Bimestres')
+    plt.xlabel('Bimestres')
+    plt.ylabel('Notas')
+    plt.legend()
+    plt.grid(True)
+    
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    return HttpResponse(buffer, content_type='image/png')
+
+
+
+
+
+
 
 
 
