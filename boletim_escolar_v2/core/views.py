@@ -18,6 +18,7 @@ from random import randint
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from boletim_escolar_v2.settings import YOUR_GOOGLE_CLIENT_ID
 
 from django.http import HttpResponse
 
@@ -29,6 +30,11 @@ import pandas as pd
 from django.db.models import Avg
 from io import BytesIO
 
+import json, time
+from django.views.decorators.csrf import csrf_exempt
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from django.shortcuts import redirect
 
 # ------------------------------------------------------------
 # Páginas Gerais (Index, Professor, Aluno, Secretaria)
@@ -48,6 +54,7 @@ def secretaria(request):
 
 def faq(request):
     return render(request, 'core/faq.html')
+
 
 
 
@@ -540,3 +547,32 @@ def cadastrar_disciplina(request):
     else:
         form = DisciplinaForm()  # Exibe o formulário vazio
     return render(request, 'core/cadastrar_disciplina.html', {'form': form})
+
+# ------------------------------------------------------------
+# Verificação de toked de ID do Google
+# ------------------------------------------------------------
+    
+def get_context_data(self, **kwargs):
+    context = super(IndexViews, self).get_context_data(**kwargs)
+    context['YOUR_GOOGLE_CLIENT_ID'] = YOUR_GOOGLE_CLIENT_ID
+        
+    return context
+    
+@csrf_exempt
+def google_login(request):
+    time.sleep(3)
+    token = request.body       
+    token = token.decode("utf-8").encode("windows-1252").decode("utf-8")
+    token = json.loads(token)
+    token = token['id_token']
+
+    try:
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), YOUR_GOOGLE_CLIENT_ID)
+        userid = idinfo['sub']
+        print(idinfo)
+        
+    except ValueError:
+        pass
+
+    return render(request, 'index.html')
+    

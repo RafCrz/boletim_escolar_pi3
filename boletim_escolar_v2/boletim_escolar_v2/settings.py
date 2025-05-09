@@ -142,3 +142,5 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+YOUR_GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
