@@ -1,0 +1,6 @@
+Foram feitos modificações nos arquivos:
+settings.py
+urls.py
+login_aluno.html
+core/urls.py
+core/views.py
