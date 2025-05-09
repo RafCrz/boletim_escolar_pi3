@@ -6,3 +6,4 @@ core/urls.py
 core/views.py
 
 O token Google ID foi removido para não ser exposto no Public, mas criei usando a conta do grupo no https://console.cloud.google.com/.
+Video de referencia: https://www.youtube.com/watch?v=VY2daR5gwzQ
