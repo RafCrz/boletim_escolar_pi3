@@ -4,3 +4,5 @@ urls.py
 login_aluno.html
 core/urls.py
 core/views.py
+
+O token Google ID foi removido para não ser exposto no Public, mas criei usando a conta do grupo no https://console.cloud.google.com/.
