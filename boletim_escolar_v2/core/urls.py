@@ -32,8 +32,8 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),  # Adiciona a URL para logout
     path('logout_aluno/', views.aluno_logout, name='logout_aluno'),  # Adiciona a URL para logout do aluno
     path('mudar_senha_aluno/', AlunoPasswordChangeView.as_view(), name='mudar_senha_aluno'),
-
     path('dashboard/', dashboard, name='dashboard'),
+    path('social-auth/', include('social_django.urls', namespace='social-auth')), # URL autenticação social google
 
 
     # ------------------------------------------------------------
